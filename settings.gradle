@@ -1,0 +1,28 @@
+pluginManagement {
+    repositories {
+        gradlePluginPortal()
+        mavenCentral()
+        mavenLocal()
+    }
+}
+
+rootProject.name = 'travel-logger'
+
+dependencyResolutionManagement {
+    repositories {
+        mavenLocal()
+        mavenCentral()
+    }
+}
+
+include 'travel-logger-api'
+project(':travel-logger-api').projectDir = new File('api')
+
+include 'travel-logger-app'
+project(':travel-logger-app').projectDir = new File('app')
+
+include 'travel-logger-sql'
+project(':travel-logger-sql').projectDir = new File('sql')
+
+include 'travel-logger-datasource-postgres'
+project(':travel-logger-datasource-postgres').projectDir = new File('datasource/postgres')

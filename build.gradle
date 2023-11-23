@@ -1,0 +1,108 @@
+buildscript {
+	repositories {
+		jcenter()
+	}
+
+	dependencies {
+		classpath 'com.netflix.nebula:gradle-aggregate-javadocs-plugin:3.0.1'
+	}
+}
+
+plugins {
+	id 'java'
+}
+
+apply plugin: 'nebula-aggregate-javadocs'
+
+subprojects({
+	apply plugin: 'java'
+	apply plugin: 'java-library'
+	apply plugin: 'maven-publish'
+	apply plugin: 'jacoco'
+	apply plugin: 'jvm-test-suite'
+
+	repositories {
+		mavenLocal()
+		mavenCentral()
+	}
+
+	dependencies {
+		// Base Libraries with versions
+		implementation platform('org.springframework.boot:spring-boot:3.1.3')
+		// Lombok
+		compileOnly 'org.projectlombok:lombok:1.18.28'
+		annotationProcessor 'org.projectlombok:lombok:1.18.28'
+		testCompileOnly('org.projectlombok:lombok:1.18.28')
+		testAnnotationProcessor('org.projectlombok:lombok:1.18.28')
+		// Test
+		testImplementation 'org.springframework.boot:spring-boot-test:3.1.3'
+		testImplementation 'io.projectreactor:reactor-test:3.5.2'
+	}
+
+	test {
+		useTestNG()
+		finalizedBy(jacocoTestReport)
+	}
+
+	def jacocoExclude = [
+			'uz/gc/travel/logger/api/constants/**',
+			'uz/gc/travel/logger/api/dto/**',
+			'uz/gc/travel/logger/api/enums/**',
+			'uz/gc/travel/logger/app/cache/**',
+			'uz/gc/travel/logger/app/config/**',
+			'uz/gc/travel/logger/app/exception/**',
+			'uz/gc/travel/logger/datasource/postgres/domain/**',
+			'uz/gc/travel/logger/datasource/postgres/config/**',
+			'uz/gc/travel/logger/datasource/postgres/exception/**'
+	]
+
+	jacocoTestReport {
+		dependsOn test
+		reports {
+			xml.required = true
+			csv.required = false
+			html.outputLocation = layout.buildDirectory.dir('jacocoHtml')
+		}
+		// Filter
+		classDirectories.setFrom(files(classDirectories.files.collect {
+			fileTree(dir: it, exclude: jacocoExclude)
+		}))
+	}
+
+	configurations {
+		all {
+			implementation.exclude group: 'org.springframework.boot', module: 'spring-boot-starter-logging'
+			implementation.exclude group: 'ch.qos.logback', module: 'logback-classic'
+		}
+	}
+
+	testing {
+		suites {
+			// Add a new test suite
+			integrationTest(JvmTestSuite) {
+
+				useTestNG()
+
+				// depend on the production code for tests
+				dependencies {
+					implementation project()
+				}
+
+				sources {
+					java.srcDir "$projectDir/src/test-i/java"
+					resources.srcDir "$projectDir/src/test-i/resources"
+				}
+			}
+		}
+	}
+
+	afterEvaluate { Project p ->
+		if (project.hasProperty('artifactName') && !project.artifactName.isBlank()) {
+			jar.setArchiveBaseName(project.artifactName)
+		}
+	}
+
+	tasks.withType(JavaCompile) {
+		options.encoding = 'UTF-8'
+	}
+})
