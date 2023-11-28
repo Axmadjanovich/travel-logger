@@ -1,25 +1,17 @@
-plugins {
-    id 'java'
-    id 'org.springframework.boot' version '3.2.0'
-    id 'io.spring.dependency-management' version '1.1.4'
-}
-
-group = 'uz.gc'
-version = '0.0.1-SNAPSHOT'
-
-java {
-    sourceCompatibility = '17'
-}
-
-repositories {
-    mavenCentral()
-}
+ext.artifactName = 'travel-logger-datasource-postgres'
 
 dependencies {
-    implementation 'org.springframework.boot:spring-boot-starter'
-    testImplementation 'org.springframework.boot:spring-boot-starter-test'
-}
+    implementation(project(":travel-logger-api"))
 
-tasks.named('test') {
-    useJUnitPlatform()
+    implementation('io.projectreactor:reactor-core:3.5.3')
+    // R2DBC
+    implementation('org.springframework.data:spring-data-r2dbc:3.0.1')
+    implementation('org.postgresql:r2dbc-postgresql:1.0.0.RELEASE')
+    //Logging
+    implementation('org.springframework.boot:spring-boot-starter-log4j2:3.0.4')
+    //Validation
+    implementation('org.springframework.boot:spring-boot-starter-validation:3.0.4')
+    //Mapstruct
+    compileOnly('org.mapstruct:mapstruct:1.5.5.Final', 'org.projectlombok:lombok:1.18.28')
+    annotationProcessor('org.mapstruct:mapstruct-processor:1.5.5.Final', 'org.projectlombok:lombok:1.18.28')
 }

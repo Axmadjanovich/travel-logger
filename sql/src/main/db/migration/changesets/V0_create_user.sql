@@ -1,0 +1,1 @@
+create user travel_logger_user with encrypted password 'travel_logger_password';
